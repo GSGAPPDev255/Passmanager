@@ -1,11 +1,11 @@
 {
   "navigationFallback": {
-    "rewrite": "/200.html",
+    "rewrite": "/index.html",
     "exclude": ["/favicon.svg", "/*.css", "/*.js", "/_app/*"]
   },
   "responseOverrides": {
     "404": {
-      "rewrite": "/200.html",
+      "rewrite": "/index.html",
       "statusCode": 200
     }
   },
