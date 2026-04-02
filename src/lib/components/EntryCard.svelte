@@ -95,7 +95,7 @@
 
 <style>
 	.entry-card {
-		background: var(--white);
+		background: var(--surface);
 		border: var(--border-thick);
 		box-shadow: var(--shadow);
 		display: flex;
@@ -185,7 +185,7 @@
 		padding: 5px 8px;
 		font-size: 13px;
 		border: var(--border);
-		background: var(--bg);
+		background: var(--field-bg);
 		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		font-family: inherit;
@@ -203,7 +203,7 @@
 		box-shadow: none;
 	}
 
-	.del-btn:hover { background: #FFE5E5; }
+	.del-btn:hover { background: color-mix(in srgb, var(--red) 15%, var(--surface)); }
 
 	.fields { display: flex; flex-direction: column; gap: 10px; }
 
@@ -212,8 +212,8 @@
 		align-items: flex-start;
 		gap: 10px;
 		padding: 8px 10px;
-		border: 2px solid #000;
-		background: var(--bg);
+		border: 2px solid var(--border-color);
+		background: var(--field-bg);
 	}
 
 	.field-label {
@@ -255,5 +255,5 @@
 		font-weight: 500;
 	}
 
-	.copied { background: #E5FFE5; }
+	.copied { background: color-mix(in srgb, var(--green) 15%, var(--surface)); }
 </style>

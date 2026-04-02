@@ -6,6 +6,7 @@
 	import { supabase } from '$lib/supabase';
 	import { session, user } from '$lib/stores/auth';
 	import { vaultUnlocked, lockVault } from '$lib/stores/masterKey';
+	import { theme } from '$lib/stores/theme';
 	import MasterKeyPrompt from '$lib/components/MasterKeyPrompt.svelte';
 
 	let initialized = false;
@@ -21,6 +22,8 @@
 	}
 
 	onMount(() => {
+		theme.init();
+
 		// Restore session on load
 		supabase.auth.getSession().then(({ data }) => {
 			session.set(data.session);

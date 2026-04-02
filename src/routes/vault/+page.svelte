@@ -9,6 +9,7 @@
 	import EntryCard from '$lib/components/EntryCard.svelte';
 	import EntryForm from '$lib/components/EntryForm.svelte';
 	import DeleteConfirm from '$lib/components/DeleteConfirm.svelte';
+	import { theme } from '$lib/stores/theme';
 	import type { DecryptedEntry, VaultEntry } from '$lib/types';
 
 	let search = '';
@@ -124,6 +125,9 @@
 		</div>
 		<div class="header-right">
 			<span class="user-email">{$user?.email}</span>
+			<button class="theme-toggle btn-ghost" on:click={theme.toggle} title="Toggle dark mode">
+				{$theme === 'dark' ? '☀️' : '🌙'}
+			</button>
 			<button class="btn-ghost signout-btn" on:click={signOut}>Sign Out</button>
 		</div>
 	</header>
@@ -214,9 +218,9 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 14px 28px;
-		background: var(--yellow);
+		background: var(--header-bg);
 		border-bottom: var(--border-thick);
-		box-shadow: 0 4px 0 #000;
+		box-shadow: 0 4px 0 var(--border-color);
 		position: sticky;
 		top: 0;
 		z-index: 10;
@@ -246,6 +250,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: -0.01em;
+		color: var(--header-text);
 	}
 
 	.header-right {
@@ -259,6 +264,11 @@
 		font-weight: 700;
 		color: #333;
 		text-transform: none;
+	}
+
+	.theme-toggle {
+		padding: 6px 10px;
+		font-size: 16px;
 	}
 
 	.signout-btn {
@@ -321,7 +331,7 @@
 		padding: 60px 24px;
 		font-weight: 600;
 		border: var(--border);
-		background: var(--white);
+		background: var(--surface);
 		box-shadow: var(--shadow);
 	}
 
@@ -329,7 +339,7 @@
 		text-align: center;
 		padding: 80px 24px;
 		border: var(--border-thick);
-		background: var(--white);
+		background: var(--surface);
 		box-shadow: var(--shadow-lg);
 		display: flex;
 		flex-direction: column;
@@ -368,6 +378,7 @@
 		max-width: 500px;
 		max-height: 90vh;
 		overflow-y: auto;
+		background: var(--surface);
 	}
 
 	.modal-header {

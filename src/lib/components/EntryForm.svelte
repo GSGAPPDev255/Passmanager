@@ -113,7 +113,7 @@
 		padding: 8px 10px;
 		flex-shrink: 0;
 		border: var(--border);
-		background: var(--bg);
+		background: var(--field-bg);
 		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		font-family: inherit;
@@ -150,8 +150,8 @@
 
 	.strength-bar {
 		height: 6px;
-		background: var(--bg);
-		border: 2px solid #000;
+		background: var(--field-bg);
+		border: 2px solid var(--border-color);
 		margin-top: 8px;
 		overflow: hidden;
 	}
@@ -176,7 +176,7 @@
 		gap: 10px;
 		margin-top: 8px;
 		padding-top: 12px;
-		border-top: var(--border);
+		border-top: 3px solid var(--border-color);
 	}
 
 	textarea { resize: vertical; }

@@ -6,10 +6,15 @@
 	padding: 0;
 }
 
-:root {
+/* ── Light mode (default) ── */
+:root, [data-theme="light"] {
 	--bg:        #FFFBF0;
-	--white:     #FFFFFF;
+	--surface:   #FFFFFF;
 	--black:     #000000;
+	--text:      #000000;
+	--text-muted:#555555;
+	--text-faint:#888888;
+
 	--yellow:    #FFE500;
 	--blue:      #0047FF;
 	--red:       #FF3131;
@@ -17,23 +22,60 @@
 	--purple:    #7B2FFF;
 	--orange:    #FF6B00;
 
-	--border:       3px solid #000;
-	--border-thick: 4px solid #000;
-	--shadow:       4px 4px 0px #000;
-	--shadow-lg:    6px 6px 0px #000;
-	--shadow-sm:    2px 2px 0px #000;
+	--border-color:  #000000;
+	--border:        3px solid var(--border-color);
+	--border-thick:  4px solid var(--border-color);
+	--shadow:        4px 4px 0px var(--border-color);
+	--shadow-lg:     6px 6px 0px var(--border-color);
+	--shadow-sm:     2px 2px 0px var(--border-color);
 
-	--radius: 0px;
-	--transition: 100ms ease;
+	--header-bg:     var(--yellow);
+	--header-text:   #000000;
+	--input-bg:      #FFFFFF;
+	--field-bg:      var(--bg);
+	--tag-bg:        #000000;
+	--tag-text:      #FFE500;
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+	--bg:        #0D0D0D;
+	--surface:   #1A1A1A;
+	--black:     #F0F0F0;
+	--text:      #F0F0F0;
+	--text-muted:#AAAAAA;
+	--text-faint:#666666;
+
+	--yellow:    #FFE500;
+	--blue:      #3D8BFF;
+	--red:       #FF4444;
+	--green:     #00E676;
+	--purple:    #BB86FC;
+	--orange:    #FF9100;
+
+	--border-color:  #F0F0F0;
+	--border:        3px solid var(--border-color);
+	--border-thick:  4px solid var(--border-color);
+	--shadow:        4px 4px 0px var(--border-color);
+	--shadow-lg:     6px 6px 0px var(--border-color);
+	--shadow-sm:     2px 2px 0px var(--border-color);
+
+	--header-bg:     #111111;
+	--header-text:   var(--yellow);
+	--input-bg:      #222222;
+	--field-bg:      #111111;
+	--tag-bg:        var(--yellow);
+	--tag-text:      #000000;
 }
 
 html, body {
 	height: 100%;
 	background: var(--bg);
-	color: var(--black);
+	color: var(--text);
 	font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
 	font-size: 15px;
 	line-height: 1.5;
+	transition: background 200ms ease, color 200ms ease;
 }
 
 a {
@@ -49,12 +91,11 @@ button {
 	font-size: 14px;
 	font-weight: 700;
 	border: var(--border);
-	border-radius: var(--radius);
 	padding: 9px 18px;
-	background: var(--white);
-	color: var(--black);
+	background: var(--surface);
+	color: var(--text);
 	box-shadow: var(--shadow);
-	transition: transform var(--transition), box-shadow var(--transition);
+	transition: transform 100ms ease, box-shadow 100ms ease;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 }
@@ -70,28 +111,29 @@ button:active:not(:disabled) {
 }
 
 button:disabled {
-	opacity: 0.5;
+	opacity: 0.45;
 	cursor: not-allowed;
 }
 
 .btn-primary {
 	background: var(--yellow);
-	color: var(--black);
+	color: #000000;
+	border-color: var(--border-color);
 }
 
 .btn-danger {
 	background: var(--red);
-	color: var(--white);
+	color: #ffffff;
 }
 
 .btn-ghost {
-	background: var(--white);
-	color: var(--black);
+	background: var(--surface);
+	color: var(--text);
 	box-shadow: var(--shadow-sm);
 }
 
 .btn-ghost:hover:not(:disabled) {
-	background: var(--bg);
+	background: var(--field-bg);
 	transform: translate(-2px, -2px);
 	box-shadow: var(--shadow);
 }
@@ -101,15 +143,18 @@ input, textarea {
 	font-family: inherit;
 	font-size: 14px;
 	font-weight: 500;
-	background: var(--white);
-	color: var(--black);
+	background: var(--input-bg);
+	color: var(--text);
 	border: var(--border);
-	border-radius: var(--radius);
 	padding: 10px 14px;
 	width: 100%;
 	outline: none;
 	box-shadow: var(--shadow-sm);
-	transition: box-shadow var(--transition), transform var(--transition);
+	transition: box-shadow 100ms ease, transform 100ms ease;
+}
+
+input::placeholder, textarea::placeholder {
+	color: var(--text-faint);
 }
 
 input:focus, textarea:focus {
@@ -124,22 +169,19 @@ label {
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	margin-bottom: 6px;
-	color: var(--black);
+	color: var(--text-muted);
 }
 
 /* ── Card ── */
 .card {
-	background: var(--white);
+	background: var(--surface);
 	border: var(--border-thick);
-	border-radius: var(--radius);
 	box-shadow: var(--shadow-lg);
 	padding: 24px;
 }
 
 /* ── Form group ── */
-.form-group {
-	margin-bottom: 18px;
-}
+.form-group { margin-bottom: 18px; }
 
 /* ── Error ── */
 .error-msg {
@@ -149,7 +191,7 @@ label {
 	margin-top: 8px;
 	border: 2px solid var(--red);
 	padding: 6px 10px;
-	background: #FFF0F0;
+	background: color-mix(in srgb, var(--red) 10%, var(--surface));
 }
 
 /* ── Spinner ── */
@@ -157,22 +199,21 @@ label {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
-	border: 3px solid rgba(0,0,0,0.2);
-	border-top-color: #000;
+	border: 3px solid color-mix(in srgb, var(--text) 20%, transparent);
+	border-top-color: var(--text);
 	border-radius: 50%;
 	animation: spin 0.6s linear infinite;
 	vertical-align: middle;
 }
 
-@keyframes spin {
-	to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Tag / badge ── */
+/* ── Tag ── */
 .tag {
 	display: inline-block;
-	background: var(--yellow);
-	border: 2px solid var(--black);
+	background: var(--tag-bg);
+	color: var(--tag-text);
+	border: 2px solid var(--border-color);
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
