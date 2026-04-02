@@ -15,9 +15,7 @@
 		try {
 			const u = new URL(url.startsWith('http') ? url : `https://${url}`);
 			return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
-		} catch {
-			return null;
-		}
+		} catch { return null; }
 	}
 
 	async function copyPassword() {
@@ -31,73 +29,96 @@
 	}
 
 	$: favicon = getFavicon(entry.url);
+
+	// Assign a color per card based on site name
+	const colors = ['#FFE500', '#0047FF', '#FF3131', '#00C853', '#7B2FFF', '#FF6B00'];
+	$: accentColor = colors[entry.site_name.charCodeAt(0) % colors.length];
 </script>
 
-<div class="entry-card card">
-	<div class="entry-header">
-		<div class="site-info">
-			{#if favicon}
-				<img src={favicon} alt="" class="favicon" width="20" height="20" />
-			{:else}
-				<div class="favicon-placeholder">{entry.site_name[0]?.toUpperCase() ?? '?'}</div>
-			{/if}
-			<div>
-				<div class="site-name">{entry.site_name}</div>
-				{#if entry.url}
-					<a href={entry.url} target="_blank" rel="noopener noreferrer" class="site-url">{entry.url}</a>
+<div class="entry-card">
+	<div class="card-accent" style="background:{accentColor}"></div>
+
+	<div class="card-body">
+		<div class="card-header">
+			<div class="site-info">
+				{#if favicon}
+					<img src={favicon} alt="" class="favicon" width="22" height="22" />
+				{:else}
+					<div class="favicon-placeholder" style="background:{accentColor}">
+						{entry.site_name[0]?.toUpperCase() ?? '?'}
+					</div>
 				{/if}
+				<div class="site-name-wrap">
+					<div class="site-name">{entry.site_name}</div>
+					{#if entry.url}
+						<a href={entry.url} target="_blank" rel="noopener noreferrer" class="site-url">{entry.url}</a>
+					{/if}
+				</div>
 			</div>
-		</div>
-		<div class="actions">
-			<button class="btn-ghost icon-btn" title="Edit" on:click={() => dispatch('edit', entry)}>
-				✏️
-			</button>
-			<button class="btn-ghost icon-btn danger-btn" title="Delete" on:click={() => dispatch('delete', entry)}>
-				🗑️
-			</button>
-		</div>
-	</div>
 
-	<div class="entry-fields">
-		<div class="field-row">
-			<span class="field-label">Username</span>
-			<span class="field-value">{entry.username}</span>
-		</div>
-
-		<div class="field-row">
-			<span class="field-label">Password</span>
-			<div class="password-row">
-				<span class="field-value password-val">
-					{showPassword ? entry.password : '••••••••••••'}
-				</span>
-				<button class="btn-ghost icon-btn small" on:click={() => (showPassword = !showPassword)}>
-					{showPassword ? '🙈' : '👁️'}
-				</button>
-				<button class="btn-ghost icon-btn small copy-btn" class:copied on:click={copyPassword}>
-					{copied ? '✅' : '📋'}
-				</button>
+			<div class="card-actions">
+				<button class="icon-btn edit-btn" title="Edit" on:click={() => dispatch('edit', entry)}>✏️</button>
+				<button class="icon-btn del-btn" title="Delete" on:click={() => dispatch('delete', entry)}>🗑️</button>
 			</div>
 		</div>
 
-		{#if entry.notes}
-			<div class="field-row">
-				<span class="field-label">Notes</span>
-				<span class="field-value notes">{entry.notes}</span>
+		<div class="fields">
+			<div class="field">
+				<span class="field-label">User</span>
+				<span class="field-val">{entry.username}</span>
 			</div>
-		{/if}
+
+			<div class="field">
+				<span class="field-label">Pass</span>
+				<div class="pw-row">
+					<span class="field-val pw-val">
+						{showPassword ? entry.password : '••••••••••••'}
+					</span>
+					<button class="icon-btn" on:click={() => (showPassword = !showPassword)}>
+						{showPassword ? '🙈' : '👁️'}
+					</button>
+					<button class="icon-btn copy-btn" class:copied on:click={copyPassword}>
+						{copied ? '✅' : '📋'}
+					</button>
+				</div>
+			</div>
+
+			{#if entry.notes}
+				<div class="field">
+					<span class="field-label">Note</span>
+					<span class="field-val notes-val">{entry.notes}</span>
+				</div>
+			{/if}
+		</div>
 	</div>
 </div>
 
 <style>
 	.entry-card {
-		transition: border-color 150ms ease;
+		background: var(--white);
+		border: var(--border-thick);
+		box-shadow: var(--shadow);
+		display: flex;
+		flex-direction: column;
+		transition: transform var(--transition), box-shadow var(--transition);
+		position: relative;
 	}
 
 	.entry-card:hover {
-		border-color: var(--color-primary);
+		transform: translate(-3px, -3px);
+		box-shadow: var(--shadow-lg);
 	}
 
-	.entry-header {
+	.card-accent {
+		height: 6px;
+		border-bottom: var(--border);
+	}
+
+	.card-body {
+		padding: 18px 20px;
+	}
+
+	.card-header {
 		display: flex;
 		align-items: flex-start;
 		justify-content: space-between;
@@ -113,16 +134,14 @@
 	}
 
 	.favicon {
-		border-radius: 4px;
+		border: 2px solid #000;
 		flex-shrink: 0;
 	}
 
 	.favicon-placeholder {
-		width: 28px;
-		height: 28px;
-		border-radius: 6px;
-		background: var(--color-primary);
-		color: #fff;
+		width: 30px;
+		height: 30px;
+		border: var(--border);
 		font-weight: 700;
 		font-size: 13px;
 		display: flex;
@@ -131,87 +150,110 @@
 		flex-shrink: 0;
 	}
 
+	.site-name-wrap { min-width: 0; }
+
 	.site-name {
-		font-weight: 600;
+		font-weight: 700;
 		font-size: 15px;
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
 	.site-url {
-		font-size: 12px;
-		color: var(--color-text-faint);
+		font-size: 11px;
+		color: #777;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		display: block;
+		text-decoration: none;
+		font-weight: 500;
 	}
 
-	.actions {
+	.site-url:hover { text-decoration: underline; }
+
+	.card-actions {
 		display: flex;
 		gap: 4px;
 		flex-shrink: 0;
 	}
 
 	.icon-btn {
-		padding: 6px 8px;
-		font-size: 14px;
-		line-height: 1;
+		padding: 5px 8px;
+		font-size: 13px;
+		border: var(--border);
+		background: var(--bg);
+		box-shadow: var(--shadow-sm);
+		cursor: pointer;
+		font-family: inherit;
+		font-weight: 700;
+		transition: transform var(--transition), box-shadow var(--transition);
 	}
 
-	.danger-btn:hover {
-		background: rgba(255, 77, 77, 0.15);
-		border-color: var(--color-danger);
+	.icon-btn:hover {
+		transform: translate(-2px, -2px);
+		box-shadow: var(--shadow);
 	}
 
-	.entry-fields {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
+	.icon-btn:active {
+		transform: translate(1px, 1px);
+		box-shadow: none;
 	}
 
-	.field-row {
+	.del-btn:hover { background: #FFE5E5; }
+
+	.fields { display: flex; flex-direction: column; gap: 10px; }
+
+	.field {
 		display: flex;
 		align-items: flex-start;
-		gap: 12px;
+		gap: 10px;
+		padding: 8px 10px;
+		border: 2px solid #000;
+		background: var(--bg);
 	}
 
 	.field-label {
-		font-size: 12px;
-		color: var(--color-text-faint);
-		width: 72px;
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #666;
+		width: 34px;
 		flex-shrink: 0;
-		padding-top: 2px;
+		padding-top: 1px;
 	}
 
-	.field-value {
-		font-size: 14px;
-		color: var(--color-text);
+	.field-val {
+		font-size: 13px;
+		font-weight: 600;
 		word-break: break-all;
+		flex: 1;
 	}
 
-	.password-row {
+	.pw-row {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: 5px;
 		flex: 1;
 	}
 
-	.password-val {
-		flex: 1;
+	.pw-val {
 		font-family: monospace;
+		font-size: 13px;
+		flex: 1;
 		letter-spacing: 0.05em;
 	}
 
-	.small {
-		padding: 4px 6px;
-		font-size: 13px;
+	.notes-val {
+		font-size: 12px;
+		color: #555;
+		white-space: pre-wrap;
+		font-weight: 500;
 	}
 
-	.notes {
-		color: var(--color-text-muted);
-		font-size: 13px;
-		white-space: pre-wrap;
-	}
+	.copied { background: #E5FFE5; }
 </style>

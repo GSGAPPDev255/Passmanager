@@ -48,7 +48,7 @@
 					password: pw
 				});
 			} catch {
-				// Skip entries that fail to decrypt (wrong key)
+				// Skip entries that fail to decrypt
 			}
 		}
 
@@ -56,11 +56,7 @@
 		vaultLoading.set(false);
 	}
 
-	onMount(() => {
-		loadVault();
-	});
-
-	// Reload when master key becomes available
+	onMount(() => { loadVault(); });
 	$: if ($masterKey) loadVault();
 
 	async function handleSave(event: CustomEvent<Partial<DecryptedEntry>>) {
@@ -81,10 +77,7 @@
 			};
 
 			if (editingEntry) {
-				const { error } = await supabase
-					.from('vault_entries')
-					.update(row)
-					.eq('id', editingEntry.id);
+				const { error } = await supabase.from('vault_entries').update(row).eq('id', editingEntry.id);
 				if (error) throw error;
 			} else {
 				const { error } = await supabase.from('vault_entries').insert(row);
@@ -105,10 +98,7 @@
 		if (!deletingEntry) return;
 		deleteLoading = true;
 		const { error } = await supabase.from('vault_entries').delete().eq('id', deletingEntry.id);
-		if (!error) {
-			deletingEntry = null;
-			await loadVault();
-		}
+		if (!error) { deletingEntry = null; await loadVault(); }
 		deleteLoading = false;
 	}
 
@@ -117,53 +107,54 @@
 		goto('/auth/login');
 	}
 
-	$: filtered = $vaultEntries.filter(
-		(e) =>
-			e.site_name.toLowerCase().includes(search.toLowerCase()) ||
-			e.username.toLowerCase().includes(search.toLowerCase())
+	$: filtered = $vaultEntries.filter(e =>
+		e.site_name.toLowerCase().includes(search.toLowerCase()) ||
+		e.username.toLowerCase().includes(search.toLowerCase())
 	);
 </script>
 
 <div class="vault-layout">
+
+	<!-- Header -->
 	<header class="vault-header">
 		<div class="header-left">
-			<span class="logo-icon">🔑</span>
-			<span class="logo-text">PassManager</span>
+			<div class="header-logo">🔑</div>
+			<span class="header-title">PassManager</span>
+			<span class="tag">{$vaultEntries.length} entries</span>
 		</div>
 		<div class="header-right">
 			<span class="user-email">{$user?.email}</span>
-			<button class="btn-ghost" on:click={signOut}>Sign Out</button>
+			<button class="btn-ghost signout-btn" on:click={signOut}>Sign Out</button>
 		</div>
 	</header>
 
 	<main class="vault-main">
+
+		<!-- Toolbar -->
 		<div class="toolbar">
 			<div class="search-wrap">
-				<span class="search-icon">🔍</span>
-				<input
-					type="search"
-					placeholder="Search entries…"
-					bind:value={search}
-					class="search-input"
-				/>
+				<span class="search-icon">⌕</span>
+				<input type="search" placeholder="Search entries…" bind:value={search} class="search-input" />
 			</div>
 			<button class="btn-primary add-btn" on:click={() => (showAddModal = true)}>
-				+ Add Entry
+				+ New Entry
 			</button>
 		</div>
 
+		<!-- States -->
 		{#if $vaultLoading}
-			<div class="state-msg"><span class="spinner"></span> Loading vault…</div>
+			<div class="state-box"><span class="spinner"></span> Loading vault…</div>
 		{:else if $vaultError}
-			<div class="state-msg error-msg">{$vaultError}</div>
+			<div class="state-box error-msg">{$vaultError}</div>
 		{:else if $vaultEntries.length === 0}
 			<div class="empty-state">
 				<div class="empty-icon">🗄️</div>
-				<p>Your vault is empty.</p>
-				<button class="btn-primary" on:click={() => (showAddModal = true)}>Add your first entry</button>
+				<p class="empty-title">Your vault is empty</p>
+				<p class="empty-sub">Add your first password entry to get started.</p>
+				<button class="btn-primary" on:click={() => (showAddModal = true)}>+ Add First Entry</button>
 			</div>
 		{:else if filtered.length === 0}
-			<div class="state-msg">No entries match "<strong>{search}</strong>"</div>
+			<div class="state-box">No entries match "<strong>{search}</strong>"</div>
 		{:else}
 			<div class="entries-grid">
 				{#each filtered as entry (entry.id)}
@@ -178,11 +169,17 @@
 	</main>
 </div>
 
-<!-- Add / Edit Modal -->
+<!-- Modal -->
 {#if showAddModal || editingEntry}
-	<div class="modal-overlay" role="presentation" on:click|self={() => { showAddModal = false; editingEntry = null; }} on:keydown|self={(e) => { if (e.key === 'Escape') { showAddModal = false; editingEntry = null; } }}>
+	<div class="modal-overlay"
+		role="presentation"
+		on:click|self={() => { showAddModal = false; editingEntry = null; }}
+		on:keydown|self={(e) => { if (e.key === 'Escape') { showAddModal = false; editingEntry = null; } }}>
 		<div class="modal card">
-			<h2>{editingEntry ? 'Edit Entry' : 'Add Entry'}</h2>
+			<div class="modal-header">
+				<h2>{editingEntry ? '✏️ Edit Entry' : '➕ New Entry'}</h2>
+				<button class="close-btn btn-ghost" on:click={() => { showAddModal = false; editingEntry = null; }}>✕</button>
+			</div>
 			<EntryForm
 				entry={editingEntry ?? {}}
 				loading={formLoading}
@@ -194,7 +191,6 @@
 	</div>
 {/if}
 
-<!-- Delete Confirm -->
 {#if deletingEntry}
 	<DeleteConfirm
 		siteName={deletingEntry.site_name}
@@ -209,29 +205,48 @@
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
+		background: var(--bg);
 	}
 
+	/* Header */
 	.vault-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 14px 24px;
-		background: var(--color-surface);
-		border-bottom: 1px solid var(--color-border);
+		padding: 14px 28px;
+		background: var(--yellow);
+		border-bottom: var(--border-thick);
+		box-shadow: 0 4px 0 #000;
 		position: sticky;
 		top: 0;
 		z-index: 10;
+		gap: 12px;
 	}
 
 	.header-left {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		font-weight: 700;
-		font-size: 17px;
+		gap: 12px;
 	}
 
-	.logo-icon { font-size: 22px; }
+	.header-logo {
+		font-size: 24px;
+		width: 40px;
+		height: 40px;
+		background: var(--white);
+		border: var(--border);
+		box-shadow: var(--shadow-sm);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.header-title {
+		font-size: 18px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
+	}
 
 	.header-right {
 		display: flex;
@@ -240,22 +255,31 @@
 	}
 
 	.user-email {
-		font-size: 13px;
-		color: var(--color-text-muted);
+		font-size: 12px;
+		font-weight: 700;
+		color: #333;
+		text-transform: none;
 	}
 
+	.signout-btn {
+		font-size: 12px;
+		padding: 6px 12px;
+	}
+
+	/* Main */
 	.vault-main {
 		flex: 1;
-		padding: 28px 24px;
-		max-width: 1100px;
+		padding: 28px;
+		max-width: 1140px;
 		width: 100%;
 		margin: 0 auto;
 	}
 
+	/* Toolbar */
 	.toolbar {
 		display: flex;
 		gap: 12px;
-		margin-bottom: 24px;
+		margin-bottom: 28px;
 	}
 
 	.search-wrap {
@@ -265,66 +289,102 @@
 
 	.search-icon {
 		position: absolute;
-		left: 12px;
+		left: 14px;
 		top: 50%;
 		transform: translateY(-50%);
-		font-size: 14px;
+		font-size: 18px;
 		pointer-events: none;
+		font-weight: 700;
 	}
 
 	.search-input {
-		padding-left: 36px;
+		padding-left: 40px;
+		font-size: 15px;
 	}
 
 	.add-btn {
 		white-space: nowrap;
-		padding: 10px 18px;
+		padding: 10px 20px;
+		font-size: 14px;
 	}
 
+	/* Grid */
 	.entries-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-		gap: 16px;
+		grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+		gap: 20px;
 	}
 
-	.state-msg {
+	/* States */
+	.state-box {
 		text-align: center;
 		padding: 60px 24px;
-		color: var(--color-text-muted);
+		font-weight: 600;
+		border: var(--border);
+		background: var(--white);
+		box-shadow: var(--shadow);
 	}
 
 	.empty-state {
 		text-align: center;
 		padding: 80px 24px;
+		border: var(--border-thick);
+		background: var(--white);
+		box-shadow: var(--shadow-lg);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 16px;
+		gap: 12px;
 	}
 
-	.empty-icon { font-size: 48px; }
+	.empty-icon { font-size: 56px; }
 
+	.empty-title {
+		font-size: 22px;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.empty-sub {
+		font-size: 14px;
+		color: #555;
+		margin-bottom: 8px;
+	}
+
+	/* Modal */
 	.modal-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.6);
+		background: rgba(0,0,0,0.5);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		z-index: 150;
 		padding: 24px;
-		backdrop-filter: blur(2px);
 	}
 
 	.modal {
 		width: 100%;
-		max-width: 480px;
+		max-width: 500px;
 		max-height: 90vh;
 		overflow-y: auto;
 	}
 
-	.modal h2 {
-		font-size: 18px;
+	.modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		margin-bottom: 20px;
+	}
+
+	.modal-header h2 {
+		font-size: 18px;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.close-btn {
+		padding: 4px 10px;
+		font-size: 16px;
 	}
 </style>

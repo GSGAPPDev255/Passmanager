@@ -12,7 +12,6 @@
 	async function handleSubmit() {
 		loading = true;
 		error = '';
-
 		try {
 			if (mode === 'login') {
 				const { error: err } = await supabase.auth.signInWithPassword({ email, password });
@@ -21,7 +20,6 @@
 			} else {
 				const { error: err } = await supabase.auth.signUp({ email, password });
 				if (err) throw err;
-				error = '';
 				mode = 'login';
 				alert('Account created! Check your email to confirm, then log in.');
 			}
@@ -49,21 +47,32 @@
 </script>
 
 <div class="auth-wrapper">
+
+	<!-- decorative blobs -->
+	<div class="blob blob-1"></div>
+	<div class="blob blob-2"></div>
+
 	<div class="auth-card card">
-		<div class="logo">🔑</div>
-		<h1>PassManager</h1>
-		<p class="tagline">Your encrypted personal vault</p>
+
+		<div class="logo-row">
+			<div class="logo-box">🔑</div>
+			<div>
+				<h1>PassManager</h1>
+				<p class="tagline">Zero-knowledge vault</p>
+			</div>
+		</div>
 
 		{#if magicLinkSent}
 			<div class="magic-sent">
-				<p>Magic link sent to <strong>{email}</strong>.</p>
-				<p>Check your inbox and click the link to sign in.</p>
-				<button class="btn-ghost" on:click={() => (magicLinkSent = false)}>Back</button>
+				<div class="sent-icon">📬</div>
+				<p class="sent-title">Check your inbox!</p>
+				<p class="sent-sub">Magic link sent to <strong>{email}</strong>. Click it to sign in instantly — no password needed.</p>
+				<button class="btn-ghost" on:click={() => (magicLinkSent = false)}>← Back</button>
 			</div>
 		{:else}
 			<div class="mode-tabs">
-				<button class:active={mode === 'login'} on:click={() => (mode = 'login')}>Log In</button>
-				<button class:active={mode === 'signup'} on:click={() => (mode = 'signup')}>Sign Up</button>
+				<button class:active={mode === 'login'} on:click={() => { mode = 'login'; error = ''; }}>Log In</button>
+				<button class:active={mode === 'signup'} on:click={() => { mode = 'signup'; error = ''; }}>Sign Up</button>
 			</div>
 
 			<form on:submit|preventDefault={handleSubmit}>
@@ -74,7 +83,8 @@
 
 				<div class="form-group">
 					<label for="password">Password</label>
-					<input id="password" type="password" bind:value={password} placeholder="Your password" required autocomplete={mode === 'signup' ? 'new-password' : 'current-password'} />
+					<input id="password" type="password" bind:value={password} placeholder="••••••••••" required
+						autocomplete={mode === 'signup' ? 'new-password' : 'current-password'} />
 				</div>
 
 				{#if error}
@@ -83,110 +93,208 @@
 
 				<button type="submit" class="btn-primary submit-btn" disabled={loading}>
 					{#if loading}<span class="spinner"></span>{/if}
-					{mode === 'login' ? 'Log In' : 'Create Account'}
+					{mode === 'login' ? 'Log In →' : 'Create Account →'}
 				</button>
 			</form>
 
-			<div class="divider"><span>or</span></div>
+			<div class="divider"><span>or skip the password</span></div>
 
-			<button class="btn-ghost magic-btn" on:click={sendMagicLink} disabled={loading}>
-				Send Magic Link
+			<button class="magic-btn" on:click={sendMagicLink} disabled={loading}>
+				✉️ Send Magic Link
 			</button>
 		{/if}
 	</div>
+
+	<p class="footer-note">Passwords encrypted on your device. We never see them.</p>
 </div>
 
 <style>
 	.auth-wrapper {
 		min-height: 100vh;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		padding: 24px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.blob {
+		position: fixed;
+		border-radius: 50%;
+		z-index: 0;
+		border: 3px solid #000;
+	}
+
+	.blob-1 {
+		width: 340px;
+		height: 340px;
+		background: #FFE500;
+		top: -100px;
+		right: -80px;
+	}
+
+	.blob-2 {
+		width: 220px;
+		height: 220px;
+		background: #0047FF;
+		bottom: -60px;
+		left: -60px;
 	}
 
 	.auth-card {
 		width: 100%;
-		max-width: 400px;
-		text-align: center;
-		padding: 40px 32px;
+		max-width: 420px;
+		position: relative;
+		z-index: 1;
+		padding: 36px 32px;
 	}
 
-	.logo {
-		font-size: 44px;
-		margin-bottom: 8px;
-	}
-
-	h1 {
-		font-size: 26px;
-		margin-bottom: 4px;
-	}
-
-	.tagline {
-		color: var(--color-text-muted);
-		font-size: 14px;
+	.logo-row {
+		display: flex;
+		align-items: center;
+		gap: 14px;
 		margin-bottom: 28px;
 	}
 
+	.logo-box {
+		width: 56px;
+		height: 56px;
+		background: var(--yellow);
+		border: var(--border);
+		box-shadow: var(--shadow);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 28px;
+		flex-shrink: 0;
+	}
+
+	h1 {
+		font-size: 24px;
+		font-weight: 700;
+		line-height: 1.1;
+		text-transform: uppercase;
+		letter-spacing: -0.02em;
+	}
+
+	.tagline {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #555;
+		margin-top: 2px;
+	}
+
+	/* Mode tabs */
 	.mode-tabs {
 		display: flex;
-		background: var(--color-bg);
-		border-radius: var(--radius-sm);
-		padding: 4px;
+		gap: 0;
 		margin-bottom: 24px;
-		gap: 4px;
+		border: var(--border);
+		box-shadow: var(--shadow-sm);
 	}
 
 	.mode-tabs button {
 		flex: 1;
-		padding: 8px;
-		background: transparent;
-		color: var(--color-text-muted);
-		border-radius: 4px;
-		font-weight: 500;
+		border: none;
+		box-shadow: none;
+		background: var(--white);
+		color: #888;
+		border-radius: 0;
+		padding: 10px;
+		font-size: 13px;
+	}
+
+	.mode-tabs button:hover:not(:disabled) {
+		transform: none;
+		box-shadow: none;
+		background: var(--bg);
+		color: var(--black);
+	}
+
+	.mode-tabs button:active:not(:disabled) {
+		transform: none;
 	}
 
 	.mode-tabs button.active {
-		background: var(--color-surface-2);
-		color: var(--color-text);
+		background: var(--yellow);
+		color: var(--black);
+		border-right: var(--border);
+	}
+
+	.mode-tabs button.active:last-child {
+		border-right: none;
+		border-left: var(--border);
 	}
 
 	.submit-btn {
 		width: 100%;
-		padding: 12px;
+		padding: 14px;
 		font-size: 15px;
+		margin-top: 4px;
 	}
 
 	.divider {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
 		margin: 20px 0;
-		color: var(--color-text-faint);
-		font-size: 13px;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #999;
 	}
 
 	.divider::before, .divider::after {
 		content: '';
 		flex: 1;
-		height: 1px;
-		background: var(--color-border);
+		height: 2px;
+		background: #000;
 	}
 
 	.magic-btn {
 		width: 100%;
-		padding: 10px;
+		padding: 12px;
+		background: var(--white);
 	}
 
+	/* Magic link sent state */
 	.magic-sent {
-		text-align: left;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
+		text-align: center;
+		padding: 12px 0;
 	}
 
-	.magic-sent p {
-		color: var(--color-text-muted);
+	.sent-icon {
+		font-size: 48px;
+		margin-bottom: 12px;
+	}
+
+	.sent-title {
+		font-size: 20px;
+		font-weight: 700;
+		text-transform: uppercase;
+		margin-bottom: 8px;
+	}
+
+	.sent-sub {
 		font-size: 14px;
+		color: #555;
+		margin-bottom: 20px;
+		line-height: 1.5;
+	}
+
+	.footer-note {
+		margin-top: 20px;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: #888;
+		position: relative;
+		z-index: 1;
 	}
 </style>
